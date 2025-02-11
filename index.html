@@ -1,0 +1,134 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUPian GWA Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #ffe6e6;
+        }
+        table {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            border: 2px solid maroon;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: maroon;
+            color: white;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: maroon;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: darkred;
+        }
+        #result {
+            font-size: 18px;
+            margin-top: 20px;
+            color: black;
+        }
+        #result span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="color: maroon;">PUPian GWA Calculator</h2>
+    <table id="gwaTable">
+        <tr>
+            <th>Subject</th>
+            <th>Units</th>
+            <th>Grade</th>
+            <th>Action</th>
+        </tr>
+    </table>
+    <button onclick="addRow()">Add Subject</button>
+    <button onclick="calculateGWA()">Calculate GWA</button>
+    <h3 id="result"></h3>
+
+    <script>
+        function addRow() {
+            let table = document.getElementById("gwaTable");
+            let row = table.insertRow(-1);
+            row.innerHTML = `
+                <td><input type="text" placeholder="Subject"></td>
+                <td><input type="number" min="1" placeholder="Units"></td>
+                <td><input type="number" step="0.01" min="1.00" max="5.00" placeholder="Grade"></td>
+                <td><button onclick="deleteRow(this)">Delete</button></td>
+            `;
+        }
+
+        function deleteRow(btn) {
+            let row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        function calculateGWA() {
+            let table = document.getElementById("gwaTable");
+            let rows = table.rows;
+            let totalUnits = 0, totalWeightedGrades = 0;
+            let lowestGrade = 5.00; // Start with the worst grade
+            let hasLowGrade = false; // Track if there's a grade below 2.50
+
+            for (let i = 1; i < rows.length; i++) {
+                let cells = rows[i].cells;
+                let units = parseFloat(cells[1].children[0].value);
+                let grade = parseFloat(cells[2].children[0].value);
+
+                if (!isNaN(units) && !isNaN(grade)) {
+                    totalUnits += units;
+                    totalWeightedGrades += (units * grade);
+
+                    // Track the lowest grade
+                    if (grade < lowestGrade) {
+                        lowestGrade = grade;
+                    }
+
+                    // Check if there's any grade below 2.50
+                    if (grade > 2.50) {
+                        hasLowGrade = true;
+                    }
+                }
+            }
+
+            if (totalUnits === 0) {
+                document.getElementById("result").innerText = "Please enter valid units and grades!";
+                return;
+            }
+
+            let gwa = totalWeightedGrades / totalUnits;
+            let resultText = `<span>Your GWA: ${gwa.toFixed(5)}</span><br>`;
+
+            // Qualification conditions
+            if (hasLowGrade) {
+                resultText += "<span style='color: red;'>❌ You are not eligible for President's or Dean's List because you have a grade lower than 2.50.</span>";
+            } else if (gwa <= 1.50) {
+                resultText += "<span style='color: green;'>🎉 Congratulations! You are a President's Lister! 🎖️</span>";
+            } else if (gwa <= 1.75) {
+                resultText += "<span style='color: blue;'>👏 You are a Dean's Lister! 🏅</span>";
+            } else {
+                resultText += "<span style='color: red;'>Keep pushing! You can do better next time. 💪</span>";
+            }
+
+            document.getElementById("result").innerHTML = resultText;
+        }
+    </script>
+</body>
+</html>
